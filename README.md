@@ -11,3 +11,8 @@ See the [Wiki](https://github.com/ZackLarsen/Observational_studies/wiki) for mor
 ## Reference Materials:
 * https://www.mostlyharmlesseconometrics.com/book-contents/
 * https://www.econometrics-with-r.org/
+* https://statlearning.com/
+* http://www.stat.columbia.edu/~gelman/arm/chap9.pdf
+* https://cdn1.sph.harvard.edu/wp-content/uploads/sites/1268/2020/01/ci_hernanrobins_21jan20.pdf
+* https://mixtape.scunning.com/index.html
+* https://www.causalflows.com/

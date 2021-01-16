@@ -9,6 +9,7 @@ See the [Wiki](https://github.com/ZackLarsen/Observational_studies/wiki) for mor
 * https://ngreifer.github.io/cobalt/
 * https://zeligproject.org/
 * https://microsoft.github.io/dowhy/
+* https://books.ropensci.org/targets/
 
 ## Reference Materials:
 * https://www.mostlyharmlesseconometrics.com/book-contents/

@@ -1,0 +1,203 @@
+---
+title: "Lalonde"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+
+
+source("../R/load_packages.R")
+
+#source(here("R", "load_packages.R"))
+
+```
+
+
+## Data io
+
+```{r io}
+
+data(lalonde)
+
+```
+
+
+## Lalonde EDA pt. 1
+
+```{r eda1}
+
+summary(lalonde)
+
+skim(lalonde)
+
+df_status(lalonde)
+
+```
+
+
+## Lalonde EDA, pt. 2
+
+```{r eda2}
+
+
+lalonde %>% 
+  group_by(treat) %>% 
+  count(sort = TRUE, wt = age, name = "subjects")
+
+lalonde %>% 
+  group_by(treat) %>% 
+  count(decile = 10 * (age %/% 10))
+
+
+```
+
+
+## Lalonde EDA, pt. 3
+
+```{r eda3}
+
+summary(lalonde$re78)
+
+describe(lalonde$re78)
+
+hist(lalonde$re78, )
+
+hist(log(lalonde$re78))
+
+```
+
+
+## Distribution Fitting
+
+```{r fitdistr, eval=TRUE, cache=TRUE}
+
+
+rgamma(100,2,11)
+
+rnorm(100,5,.01)
+
+
+x <- rgamma(10000,2,11) + rnorm(10000,5,.01)
+fit.gamma <- fitdist(x, distr = "gamma", method = "mle")
+summary(fit.gamma)
+plot(fit.gamma)
+
+
+# lalonde_gamma <- fitdist(lalonde$re78 + 1, distr = "gamma", method = "mle")
+# summary(lalonde_gamma)
+# plot(lalonde_gamma)
+
+```
+
+## Matching
+
+```{r matchit}
+
+
+match_1 <- matchit(formula = treat ~ re78, 
+        method = "nearest",
+        data = lalonde,
+        discard = "both", 
+        replace = FALSE, 
+        #caliper = c(),
+        #std.caliper = c(),
+        ratio = 1)
+
+match_1
+
+summary(match_1)
+
+```
+
+
+## Linear Modeling
+
+#### Assumptions:
+* Linearity
+* Homoscedasticity
+* Independence
+* Normality
+
+http://www.sthda.com/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/
+
+https://data.library.virginia.edu/diagnostic-plots/
+
+```{r lin_mod}
+
+plot(lalonde$re78)
+
+
+# Pre-match data:
+prematch_lm <- lm(re78 ~ treat, data = lalonde)
+
+# Matched data:
+matched_lm <- lm(re78 ~ treat, data = match.data(match_1), weights = weights)
+
+
+
+autoplot(prematch_lm) +
+  theme_abyss()
+  #theme_minimal() + 
+  #theme_ft_rc()
+
+```
+
+
+
+## Generalized Linear Modeling
+* Get help page:
+* ?family
+
+```{r glm}
+
+
+
+
+# Gaussian-distributed residuals and identity link = OLS:
+gaussian_identity <- glm(re78 ~ treat, data = lalonde, family=gaussian(link = "identity"))
+summary(gaussian_identity)
+
+# Gamma default link is "inverse"
+gamma_inverse <- glm(re78 + 1 ~ treat, data = lalonde, family=Gamma(link = "inverse"))
+summary(gamma_inverse)
+
+# Using log link
+gamma_log <- glm(re78 + 1 ~ treat, data = lalonde, family=Gamma(link = "log"))
+summary(gamma_log)
+plot(rstudent(gamma_log))
+plot(influence(gamma_log)$hat)
+plot(cooks.distance(gamma_log))
+
+```
+
+
+## Uncertainty / confidence intervals
+
+https://moderndive.com/10-inference-for-regression.html
+
+```{r uncertainty}
+
+
+
+
+```
+
+## Logistic GLM
+
+```{r logistic}
+
+# Logistic regression is binomial with "logit" link
+logistic_mod <- glm(treat ~ re74 + re75, data = lalonde, family = binomial(link="logit"))
+# Output of above will be log-odds in the "estimate" column
+# By exponentiating the coefficients, we can get the odds
+exp(logistic_mod$coef)
+
+summary(logistic_mod)
+confint(logistic_mod)
+
+
+```

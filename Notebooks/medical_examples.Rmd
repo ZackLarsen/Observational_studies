@@ -1,0 +1,126 @@
+---
+title: "Medical Matching Examples"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+
+source("../R/load_packages.R")
+
+#source(here("R", "load_packages.R"))
+
+# List preloaded data:
+data("DW")
+data("WeightLoss")
+data("LoBD")
+data("KosteckiDillon")
+data("SmokeBan")
+data("ProgramEffectiveness")
+data("NMES1988")
+data("Medicaid1986")
+data("HealthInsurance")
+data("DoctorVisits")
+data("bacteria")
+data("AOD")
+data("iptwExLong")
+data("iptwExLong")
+data("diabetic")
+data("PBG")
+data("GerberGreenImai")
+data("wtloss")
+data("epil")
+data("birthwt")
+data("biopsy")
+data("bacteria")
+
+
+
+datasets <- c(
+"DW",
+"WeightLoss",
+"LoBD",
+"KosteckiDillon",
+"SmokeBan",
+"ProgramEffectiveness",
+"NMES1988",
+"Medicaid1986",
+"HealthInsurance",
+"DoctorVisits",
+"bacteria",
+"AOD",
+# "iptwExLong",
+# "iptwExLong",
+"diabetic",
+"PBG",
+"GerberGreenImai",
+"wtloss",
+"epil",
+"birthwt",
+"biopsy",
+"bacteria"
+)
+
+
+for(dataset in datasets){
+  print(glue("Dataset {dataset} has {nrow(get(dataset))} rows and {ncol(get(dataset))} columns."))
+}
+
+
+```
+
+
+## Data descriptions
+
+```{r descriptions}
+
+
+
+```
+
+
+## Data EDA pt. 1
+
+```{r eda1}
+
+summary(lalonde)
+
+skim(lalonde)
+
+df_status(lalonde)
+
+```
+
+
+## Matching
+
+```{r matchit}
+
+
+match_1 <- matchit(formula = treat ~ re78, 
+        method = "nearest",
+        data = lalonde,
+        discard = "both", 
+        replace = FALSE, 
+        #caliper = c(),
+        #std.caliper = c(),
+        ratio = 1)
+
+match_1
+
+summary(match_1)
+
+```
+
+
+## Modeling
+
+```{r model}
+
+
+
+
+```

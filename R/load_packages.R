@@ -47,7 +47,8 @@ p_load(
   
   # Dataviz
   cowplot, ggthemes, esquisse,
-  ggthemes, ggforce, ggpubr, ggsci, ggfortify,
+  ggthemes, ggforce, ggpubr, ggsci, ggfortify, 
+  plotly, rbokeh,
   treemapify,
   #gifski, transformr,
   #gganimate, # Careful - gganimate messes up the View() function

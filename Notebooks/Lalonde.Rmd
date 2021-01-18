@@ -68,6 +68,53 @@ hist(lalonde$re78, )
 
 hist(log(lalonde$re78))
 
+
+
+
+hp <- ggplot(lalonde, aes(x=age)) + 
+  geom_histogram(binwidth=2,colour="white",fill="skyblue")
+ggplotly(hp)
+# Divide by levels of treatment, in the horizontal direction
+hp + facet_grid(. ~ treat)
+
+
+
+hp <- ggplot(lalonde, aes(x=educ)) + 
+  geom_histogram(binwidth=2,colour="white",fill="skyblue")
+hp + facet_grid(. ~ treat)
+
+
+
+
+hp <- ggplot(lalonde, aes(x=treat)) + 
+  geom_histogram(binwidth=2,colour="white",fill="skyblue")
+hp + facet_grid(. ~ re75)
+
+
+
+
+
+
+
+# Boxplots with facet grid for treatment indicator:
+
+dfmelt<-melt(lalonde, measure.vars = 2:10)
+dfmelt
+
+p <- ggplot(dfmelt, aes(x=factor(round(treat,0.5)), y=value,fill=variable))+
+  geom_boxplot()+
+  facet_grid(.~variable)+
+  labs(x="X (binned)")+
+  theme(axis.text.x=element_text(angle=-90, vjust=0.4,hjust=1))
+
+p <- ggplotly(p)
+p
+
+
+p + facet_grid(treat ~ .)
+
+
+
 ```
 
 
@@ -98,7 +145,8 @@ plot(fit.gamma)
 ```{r matchit}
 
 
-match_1 <- matchit(formula = treat ~ re78, 
+match_1 <- matchit(formula = treat ~ age + educ + black + hispan + married + 
+                   nodegree + re74 + re75, 
         method = "nearest",
         data = lalonde,
         discard = "both", 
@@ -109,7 +157,40 @@ match_1 <- matchit(formula = treat ~ re78,
 
 match_1
 
-summary(match_1)
+summary(match_1, )
+
+```
+
+
+#### Match diagnostics
+
+```{r diagnostics}
+
+
+plot(summary(match_1))
+
+plot(bal.tab(match_1))
+
+# Examining distributional balance with plots:
+bal.plot(match_1, var.name = "nodegree")
+bal.plot(match_1, var.name = "distance", mirror = TRUE, type = "histogram")
+
+
+plot(match_1, type = "jitter", interactive = FALSE)
+
+plot(match_1, type = "qq", interactive = FALSE,
+     which.xs = c("age", "married", "re75"))
+
+```
+
+
+## Matched data
+
+```{r md}
+
+match_1_data <- match.data(match_1)
+
+head(match_1_data)
 
 ```
 
@@ -147,10 +228,81 @@ autoplot(prematch_lm) +
 ```
 
 
+## Estimating the Treatment Effect
+
+https://kosukeimai.github.io/MatchIt/articles/MatchIt.html
+
+How treatment effects are estimated depends on what form of matching was performed. See vignette("estimating-effects") for information on the variety of way to estimate effects and standard errors after each type of matching and for several outcome types. After 1:1 matching without replacement (i.e., the first matching specification above), we can run a simple regression of the outcome on the treatment in the matched sample (i.e., including the matching weights). With continuous outcomes, it is often a good idea to also include the covariates used in the matching in the effect estimation, as doing so can provide additional robustness to slight imbalances remaining after the matching and can improve precision.
+
+Even though the 1:1 matching was not successful, we’ll demonstrate here how to estimate a treatment effect after performing such an analysis. First, we’ll extract the matched dataset from the matchit object using match.data(). This dataset only contains the matched units and adds columns for distance, weights, and subclass (described previously).
+
+We can then estimate a treatment effect in this dataset using the standard regression functions in R, like lm() or glm(), being sure to include the matching weights (stored in the weights variable of the match.data() output) in the estimation3. We recommend using cluster-robust standard errors for most analyses, with pair membership as the clustering variable; the lmtest and sandwich packages together make this straightforward.
+
+```{r sandwich}
+
+library("lmtest") #coeftest
+library("sandwich") #vcovCL
+
+fit1 <- lm(re78 ~ treat + age + educ + black + hispan + married + nodegree + 
+             re74 + re75, 
+           data = match_1_data, 
+           weights = weights)
+
+coeftest(fit1, vcov. = vcovCL, cluster = ~subclass)
+
+```
+
+
+## Uncertainty / confidence intervals
+
+
+https://kosukeimai.github.io/MatchIt/articles/estimating-effects.html#after-pair-matching-with-replacement-1
+
+```{r uncertainty}
+
+#Block bootstrap confidence interval
+# library(boot)
+
+pair_ids <- levels(match_1_data$subclass)
+
+est_fun <- function(pairs, i) {
+  
+  #Compute number of times each pair is present
+  numreps <- table(pairs[i])
+  
+  #For each pair p, copy corresponding md row indices numreps[p] times
+  ids <- unlist(lapply(pair_ids[pair_ids %in% names(numreps)],
+                       function(p) rep(which(match_1_data$subclass == p), 
+                                              numreps[p])))
+  
+  #Subset md with block bootstrapped ids
+  md_boot <- match_1_data[ids,]
+  
+  #Effect estimation
+  fit_boot <- lm(re78 ~ treat,
+                 data = md_boot,
+                 weights = weights)
+  
+  #Return the coefficient on treatment
+  return(coef(fit_boot)["treat"])
+}
+
+boot_est <- boot(pair_ids, est_fun, R = 499)
+boot_est
+
+
+boot.ci(boot_est, type = "bca")
+
+```
+
+https://moderndive.com/10-inference-for-regression.html is another helpful resource in addition to the above link from Kosuke Imai
+
 
 ## Generalized Linear Modeling
 * Get help page:
 * ?family
+
+See https://fromthebottomoftheheap.net/2016/06/07/rootograms/
 
 ```{r glm}
 
@@ -174,17 +326,6 @@ plot(cooks.distance(gamma_log))
 
 ```
 
-
-## Uncertainty / confidence intervals
-
-https://moderndive.com/10-inference-for-regression.html
-
-```{r uncertainty}
-
-
-
-
-```
 
 ## Logistic GLM
 

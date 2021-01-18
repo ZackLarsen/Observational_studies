@@ -80,7 +80,7 @@ ggplot(lalonde, aes(x=age)) +
 
 ## Distribution Fitting
 
-```{r fitdistr, eval=TRUE, cache=TRUE}
+```{r fitdistr, eval=TRUE, cache=TRUE, warning=FALSE, message=FALSE}
 
 
 hist(rgamma(100,2,11))
@@ -192,8 +192,6 @@ summary(match_2, subclass = TRUE, un = FALSE)
 #### Match diagnostics (match 2)
 
 ```{r diagnostics2}
-
-summary(match_2)
 
 plot(summary(match_2))
 
@@ -439,4 +437,282 @@ summary(gamma_inverse)
 # plot(cooks.distance(gamma_log))
 
 ```
+
+#### Zelig
+
+https://docs.zeligproject.org/articles/att.html
+
+All models in Zelig can be estimated and results explored presented using four simple functions:
+
+1. zelig to estimate the parameters,
+1. setx to set fitted values for which we want to find quantities of interest,
+1. sim to simulate the quantities of interest,
+1. plot to plot the simulation results.
+
+
+```{r zelig}
+
+
+# https://docs.zeligproject.org/articles/zelig5_vs_zelig4.html
+z5 <- zls$new()
+z5$zelig(re78 + 1 ~ treat + age + educ + black + hispan + married + nodegree + re74 + re75,
+         weights = match_2_data$weights,
+         data = match_2_data)
+z5$setx()
+z5$sim()
+z5$graph()
+
+
+
+w <- match_2_data$weights
+z.out <- zelig(re78 + 1 ~ treat, model = "gamma", weights = w, data = match_2_data)
+summary(z.out)
+x.out <- setx(z.out)
+s.out <- sim(z.out, x = x.out, treat = 1)
+
+s.out
+plot(s.out)
+
+
+x.low <- setx(z.out, treat = 0)
+x.high <- setx(z.out, treat = 1)
+
+s.out <- sim(z.out, x = x.low, x1 = x.high)
+
+s.out
+plot(s.out)
+
+```
+
+
+#### Zelig experimentation
+
+```{r zelig_exp}
+
+
+#Generatng data similar to Austin (2009) for demonstrating treatment effect estimation
+gen_X <- function(n) {
+  X <- matrix(rnorm(9 * n), nrow = n, ncol = 9)
+  X[,5] <- as.numeric(X[,5] < .5)
+  X
+}
+
+#~20% treated
+gen_A <- function(X) {
+  LP_A <- - 1.2 + log(2)*X[,1] - log(1.5)*X[,2] + log(2)*X[,4] - log(2.4)*X[,5] + log(2)*X[,7] - log(1.5)*X[,8]
+  P_A <- plogis(LP_A)
+  rbinom(nrow(X), 1, P_A)
+}
+
+# Continuous outcome
+gen_Y_C <- function(A, X) {
+  2*A + 2*X[,1] + 2*X[,2] + 2*X[,3] + 1*X[,4] + 2*X[,5] + 1*X[,6] + rnorm(length(A), 0, 5)
+}
+#Conditional:
+#  MD: 2
+#Marginal:
+#  MD: 2
+
+# Binary outcome
+gen_Y_B <- function(A, X) {
+  LP_B <- -2 + log(2.4)*A + log(2)*X[,1] + log(2)*X[,2] + log(2)*X[,3] + log(1.5)*X[,4] + log(2.4)*X[,5] + log(1.5)*X[,6]
+  P_B <- plogis(LP_B)
+  rbinom(length(A), 1, P_B)
+}
+#Conditional:
+#  OR:   2.4
+#  logOR: .875
+#Marginal:
+#  RD:    .144
+#  RR:   1.54
+#  logRR: .433
+#  OR:   1.92
+#  logOR  .655
+
+# Survival outcome
+gen_Y_S <- function(A, X) {
+  LP_S <- -2 + log(2.4)*A + log(2)*X[,1] + log(2)*X[,2] + log(2)*X[,3] + log(1.5)*X[,4] + log(2.4)*X[,5] + log(1.5)*X[,6]
+  sqrt(-log(runif(length(A)))*2e4*exp(-LP_S))
+}
+#Conditional:
+#  HR:   2.4
+#  logHR: .875
+#Marginal:
+#  HR:   1.57
+#  logHR: .452
+
+set.seed(19599)
+
+n <- 2000
+X <- gen_X(n)
+A <- gen_A(X)
+
+Y_C <- gen_Y_C(A, X)
+Y_B <- gen_Y_B(A, X)
+Y_S <- gen_Y_S(A, X)
+
+d <- data.frame(A, X, Y_C, Y_B, Y_S)
+
+head(d)
+
+
+
+
+
+mNN <- matchit(A ~ X1 + X2 + X3 + X4 + X5 + 
+                 X6 + X7 + X8 + X9, data = d)
+
+mNN
+
+md <- match.data(mNN)
+
+head(md)
+
+
+#Linear model without covariates
+fit1 <- lm(Y_C ~ A, data = md, weights = weights)
+summary(fit1)
+#Cluster-robust standard errors
+coeftest(fit1, vcov. = vcovCL, cluster = ~subclass)
+
+
+
+
+
+
+
+
+
+
+
+
+# data(sanction)
+# zqi.out <- zelig(num ~ target + coop + mil, 
+#                  model = "poisson", data = sanction, cite = FALSE)
+# 
+# # find the ATT where the treatement is mil = 1
+# z.att <- zqi.out %>%
+#              ATT(treatment = "mil", treat = 1) %>% 
+#              get_qi(qi = "ATT", xvalue = "TE")
+# 
+# # summarize the results
+# hist(z.att, 
+#      main = NULL,
+#      xlab ="Average Treatment Effect of mil on the Treated")
+
+s
+
+```
+
+
+## TWANG IPTW
+
+https://www.rand.org/statistics/twang/r-tutorial.html
+
+```{r twang}
+
+set.seed(1)
+
+ps.lalonde <- ps(treat ~ age + educ + black + hispan + nodegree + 
+                   married + re74 + re75,
+                 data = lalonde,
+                 n.trees=5000,
+                 interaction.depth=2,
+                 shrinkage=0.01,
+                 perm.test.iters=0,
+                 stop.method=c("es.mean","ks.max"),
+                 estimand = "ATT",
+                 verbose=FALSE)
+
+plot(ps.lalonde)
+
+summary(ps.lalonde)
+
+
+summary(
+  ps.lalonde$gbm.obj,
+        n.trees=ps.lalonde$desc$ks.max.ATT$n.trees,
+        plot=FALSE)
+
+
+lalonde.balance <- bal.table(ps.lalonde)
+
+lalonde.balance
+
+plot(ps.lalonde, plots=2)
+
+plot(ps.lalonde, plots=3)
+
+plot(ps.lalonde, plots = 4)
+
+plot(ps.lalonde, plots = 5)
+
+plot(ps.lalonde, plots = 3, subset = 2)
+
+# A separate R package, the survey package, is useful for performing the outcomes analyses using weights. Its statistical methods account for the weights when computing standard error estimates. It is not a part of the standard R installation but installing twang should automatically install survey as well.
+# 
+# > library(survey)
+# 
+# The get.weights() function extracts the propensity score weights from a ps object. Those weights may then be used as case weights in a svydesign object. By default, it returns weights corresponding to the estimand (ATE or ATT) that was specified in the original call to ps(). If needed, the user can override the default via the optional estimand argument.
+
+lalonde$w <- get.weights(ps.lalonde, stop.method="es.mean")
+
+design.ps <- svydesign(ids=~1, weights=~w, data=lalonde)
+
+glm1 <- svyglm(re78 ~ treat, design=design.ps)
+
+summary(glm1)
+
+```
+
+The analysis estimates an increase in earnings of $733 for those that participated in the
+
+NSW compared with similarly situated people observed in the CPS. The effect, however, does not appear to be statistically significant.
+
+
+#### TWANG Doubly Robust
+
+Some authors have recommended utilizing both propensity score adjustment and additional covariate adjustment to minimize mean square error or to obtain "doubly robust" estimates of the treatment effect (Huppler-Hullsiek & Louis 2002, Bang & Robins 2005). These estimators are consistent if either the propensity scores are estimated correctly or the regression model is specified correctly. For example, note that the balance table for ks.max.ATT made the two groups more similar on nodegree, but still some differences remained, 70.8% of the treatment group had no degree while 60.1% of the comparison group had no degree. While linear regression is sensitive to model misspecification when the treatment and comparison groups are dissimilar, the propensity score weighting has made them more similar, perhaps enough so that additional modeling with covariates can adjust for any remaining differences. In addition to potential bias reduction, the inclusion of additional covariates can reduce the standard error of the treatment effect if some of the covariates are strongly related to the outcome.
+
+```{r twang2}
+
+glm2 <- svyglm(re78 ~ treat + nodegree, design=design.ps)
+
+summary(glm2)
+
+```
+
+Adjusting for the remaining group difference in the nodegree variable slightly increased the
+
+estimate of the program’s effect to $920, but the difference is still not statistically significant. We can further adjust for the other covariates, but that too in this case has little effect on the estimated program effect.
+
+```{r twang3}
+
+glm3 <- svyglm(re78 ~ treat + age + educ + black + hispan + nodegree +
+                 married + re74 + re75,
+               design=design.ps)
+
+summary(glm3)
+
+```
+
+
+#### TWANG LM
+
+The more traditional regression approach to estimating the program effect would fit a linear model with a treatment indicator and linear terms for each of the covariates.
+
+```{r twang4}
+
+
+glm4 <- lm(re78 ~ treat + age + educ + black + hispan + nodegree +
+             married + re74 + re75,
+           data=lalonde)
+
+summary(glm4)
+
+
+```
+
+This model estimates a rather strong treatment effect, estimating a program effect of `$`1548 with a p-value=0.048. Several variations of this regression approach also estimate strong program effects. For example using square root transforms on the earnings variables yields a p- value=0.016. These estimates, however, are very sensitive to the model structure since the treatment and control subjects differ greatly as seen in the unweighted balance comparison ($unw) from bal.table(ps.lalonde).
+
 

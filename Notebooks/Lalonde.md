@@ -1329,81 +1329,6 @@ summary(match_2, subclass = TRUE, un = FALSE)
 #### Match diagnostics (match 2)
 
 ``` r
-summary(match_2)
-```
-
-    ## 
-    ## Call:
-    ## matchit(formula = treat ~ age + educ + black + hispan + married + 
-    ##     nodegree + re74 + re75, data = lalonde, method = "full", 
-    ##     distance = "glm", link = "probit", discard = "both")
-    ## 
-    ## Summary of Balance for All Data:
-    ##          Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
-    ## distance        0.5773        0.1817          1.8276     0.8777    0.3774
-    ## age            25.8162       28.0303         -0.3094     0.4400    0.0813
-    ## educ           10.3459       10.2354          0.0550     0.4959    0.0347
-    ## black           0.8432        0.2028          1.7615          .    0.6404
-    ## hispan          0.0595        0.1422         -0.3498          .    0.0827
-    ## married         0.1892        0.5128         -0.8263          .    0.3236
-    ## nodegree        0.7081        0.5967          0.2450          .    0.1114
-    ## re74         2095.5737     5619.2365         -0.7211     0.5181    0.2248
-    ## re75         1532.0553     2466.4844         -0.2903     0.9563    0.1342
-    ##          eCDF Max
-    ## distance   0.6413
-    ## age        0.1577
-    ## educ       0.1114
-    ## black      0.6404
-    ## hispan     0.0827
-    ## married    0.3236
-    ## nodegree   0.1114
-    ## re74       0.4470
-    ## re75       0.2876
-    ## 
-    ## 
-    ## Summary of Balance for Matched Data:
-    ##          Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
-    ## distance        0.5672        0.5673         -0.0003     0.9899    0.0040
-    ## age            25.4463       25.8881         -0.0617     0.4301    0.0890
-    ## educ           10.3220       10.3354         -0.0066     0.6197    0.0199
-    ## black           0.8362        0.8316          0.0124          .    0.0045
-    ## hispan          0.0621        0.0515          0.0449          .    0.0106
-    ## married         0.1977        0.1647          0.0844          .    0.0331
-    ## nodegree        0.6949        0.6784          0.0364          .    0.0166
-    ## re74         2179.3904     2167.2675          0.0025     1.4077    0.0360
-    ## re75         1485.9177     1461.8476          0.0075     1.5382    0.0405
-    ##          eCDF Max Std. Pair Dist.
-    ## distance   0.0565          0.0166
-    ## age        0.2547          1.2411
-    ## educ       0.0625          1.2022
-    ## black      0.0045          0.0187
-    ## hispan     0.0106          0.5753
-    ## married    0.0331          0.5732
-    ## nodegree   0.0166          0.9975
-    ## re74       0.2331          0.7737
-    ## re75       0.1848          0.8010
-    ## 
-    ## Percent Balance Improvement:
-    ##          Std. Mean Diff. Var. Ratio eCDF Mean eCDF Max
-    ## distance           100.0       92.2      99.0     91.2
-    ## age                 80.0       -2.8      -9.5    -61.5
-    ## educ                87.9       31.8      42.8     43.9
-    ## black               99.3          .      99.3     99.3
-    ## hispan              87.2          .      87.2     87.2
-    ## married             89.8          .      89.8     89.8
-    ## nodegree            85.1          .      85.1     85.1
-    ## re74                99.7       48.0      84.0     47.8
-    ## re75                97.4     -863.5      69.8     35.8
-    ## 
-    ## Sample Sizes:
-    ##               Control Treated
-    ## All            429.       185
-    ## Matched (ESS)   60.69     177
-    ## Matched        369.       177
-    ## Unmatched        0.         0
-    ## Discarded       60.         8
-
-``` r
 plot(summary(match_2))
 ```
 
@@ -1847,3 +1772,714 @@ summary(gamma_inverse)
 # plot(influence(gamma_log)$hat)
 # plot(cooks.distance(gamma_log))
 ```
+
+#### Zelig
+
+<https://docs.zeligproject.org/articles/att.html>
+
+All models in Zelig can be estimated and results explored presented
+using four simple functions:
+
+1.  zelig to estimate the parameters,
+2.  setx to set fitted values for which we want to find quantities of
+    interest,
+3.  sim to simulate the quantities of interest,
+4.  plot to plot the simulation results.
+
+<!-- end list -->
+
+``` r
+# https://docs.zeligproject.org/articles/zelig5_vs_zelig4.html
+z5 <- zls$new()
+z5$zelig(re78 + 1 ~ treat + age + educ + black + hispan + married + nodegree + re74 + re75,
+         weights = match_2_data$weights,
+         data = match_2_data)
+```
+
+    ## Warning: `tbl_df()` is deprecated as of dplyr 1.0.0.
+    ## Please use `tibble::as_tibble()` instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_warnings()` to see where this warning was generated.
+
+    ## Warning: `group_by_()` is deprecated as of dplyr 0.7.0.
+    ## Please use `group_by()` instead.
+    ## See vignette('programming') for more help
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_warnings()` to see where this warning was generated.
+
+``` r
+z5$setx()
+z5$sim()
+z5$graph()
+```
+
+![](Lalonde_files/figure-gfm/zelig-1.png)<!-- -->
+
+``` r
+w <- match_2_data$weights
+z.out <- zelig(re78 + 1 ~ treat, model = "gamma", weights = w, data = match_2_data)
+```
+
+    ## Noninteger weights were set, but the model in Zelig is only able to use integer valued weights.
+    ##  A bootstrapped version of the dataset was constructed using the weights as sample probabilities.
+    ## 
+    ## How to cite this model in Zelig:
+    ##   R Core Team. 2007.
+    ##   gamma: Gamma Regression for Continuous, Positive Dependent Variables
+    ##   in Christine Choirat, Christopher Gandrud, James Honaker, Kosuke Imai, Gary King, and Olivia Lau,
+    ##   "Zelig: Everyone's Statistical Software," https://zeligproject.org/
+
+``` r
+summary(z.out)
+```
+
+    ## Model: 
+    ## 
+    ## Call:
+    ## z5$zelig(formula = re78 + 1 ~ treat, data = match_2_data, weights = w)
+    ## 
+    ## Deviance Residuals: 
+    ##     Min       1Q   Median       3Q      Max  
+    ## -3.9556  -3.8325  -0.6615   0.4939   2.4171  
+    ## 
+    ## Coefficients:
+    ##               Estimate Std. Error t value Pr(>|t|)
+    ## (Intercept)  2.379e-04  1.643e-05  14.481  < 2e-16
+    ## treat       -9.062e-05  2.150e-05  -4.216 2.92e-05
+    ## 
+    ## (Dispersion parameter for Gamma family taken to be 1.693013)
+    ## 
+    ##     Null deviance: 2812.9  on 545  degrees of freedom
+    ## Residual deviance: 2783.2  on 544  degrees of freedom
+    ## AIC: 9313.1
+    ## 
+    ## Number of Fisher Scoring iterations: 7
+    ## 
+    ## Next step: Use 'setx' method
+
+``` r
+x.out <- setx(z.out)
+s.out <- sim(z.out, x = x.out, treat = 1)
+
+s.out
+```
+
+    ## 
+    ##  sim x :
+    ##  -----
+    ## ev
+    ##          mean       sd      50%     2.5%    97.5%
+    ## [1,] 4850.945 271.1543 4840.306 4359.785 5402.554
+    ## pv
+    ##          mean       sd      50%      2.5%    97.5%
+    ## [1,] 4736.924 9841.755 912.3834 0.0231313 30582.03
+
+``` r
+plot(s.out)
+```
+
+![](Lalonde_files/figure-gfm/zelig-2.png)<!-- -->
+
+``` r
+x.low <- setx(z.out, treat = 0)
+x.high <- setx(z.out, treat = 1)
+
+s.out <- sim(z.out, x = x.low, x1 = x.high)
+
+s.out
+```
+
+    ## 
+    ##  sim x :
+    ##  -----
+    ## ev
+    ##          mean       sd    50%     2.5%    97.5%
+    ## [1,] 4226.844 296.8056 4201.8 3701.698 4876.172
+    ## pv
+    ##          mean       sd      50%        2.5%    97.5%
+    ## [1,] 4404.972 8936.878 755.6748 0.004793383 29036.68
+    ## 
+    ##  sim x1 :
+    ##  -----
+    ## ev
+    ##          mean       sd     50%     2.5%    97.5%
+    ## [1,] 6813.445 643.3956 6739.33 5693.468 8194.188
+    ## pv
+    ##          mean       sd      50%      2.5%    97.5%
+    ## [1,] 6951.025 13571.82 1172.144 0.0190623 50981.34
+    ## fd
+    ##          mean       sd      50%     2.5%    97.5%
+    ## [1,] 2586.601 726.4907 2540.744 1302.043 4105.788
+
+``` r
+plot(s.out)
+```
+
+![](Lalonde_files/figure-gfm/zelig-3.png)<!-- -->
+
+#### Zelig experimentation
+
+``` r
+#Generatng data similar to Austin (2009) for demonstrating treatment effect estimation
+gen_X <- function(n) {
+  X <- matrix(rnorm(9 * n), nrow = n, ncol = 9)
+  X[,5] <- as.numeric(X[,5] < .5)
+  X
+}
+
+#~20% treated
+gen_A <- function(X) {
+  LP_A <- - 1.2 + log(2)*X[,1] - log(1.5)*X[,2] + log(2)*X[,4] - log(2.4)*X[,5] + log(2)*X[,7] - log(1.5)*X[,8]
+  P_A <- plogis(LP_A)
+  rbinom(nrow(X), 1, P_A)
+}
+
+# Continuous outcome
+gen_Y_C <- function(A, X) {
+  2*A + 2*X[,1] + 2*X[,2] + 2*X[,3] + 1*X[,4] + 2*X[,5] + 1*X[,6] + rnorm(length(A), 0, 5)
+}
+#Conditional:
+#  MD: 2
+#Marginal:
+#  MD: 2
+
+# Binary outcome
+gen_Y_B <- function(A, X) {
+  LP_B <- -2 + log(2.4)*A + log(2)*X[,1] + log(2)*X[,2] + log(2)*X[,3] + log(1.5)*X[,4] + log(2.4)*X[,5] + log(1.5)*X[,6]
+  P_B <- plogis(LP_B)
+  rbinom(length(A), 1, P_B)
+}
+#Conditional:
+#  OR:   2.4
+#  logOR: .875
+#Marginal:
+#  RD:    .144
+#  RR:   1.54
+#  logRR: .433
+#  OR:   1.92
+#  logOR  .655
+
+# Survival outcome
+gen_Y_S <- function(A, X) {
+  LP_S <- -2 + log(2.4)*A + log(2)*X[,1] + log(2)*X[,2] + log(2)*X[,3] + log(1.5)*X[,4] + log(2.4)*X[,5] + log(1.5)*X[,6]
+  sqrt(-log(runif(length(A)))*2e4*exp(-LP_S))
+}
+#Conditional:
+#  HR:   2.4
+#  logHR: .875
+#Marginal:
+#  HR:   1.57
+#  logHR: .452
+
+set.seed(19599)
+
+n <- 2000
+X <- gen_X(n)
+A <- gen_A(X)
+
+Y_C <- gen_Y_C(A, X)
+Y_B <- gen_Y_B(A, X)
+Y_S <- gen_Y_S(A, X)
+
+d <- data.frame(A, X, Y_C, Y_B, Y_S)
+
+head(d)
+```
+
+    ##   A         X1         X2         X3          X4 X5         X6         X7
+    ## 1 0  0.1725432 -1.4282682 -0.4102538 -2.36059391  1 -1.1198630  0.6397597
+    ## 2 0 -1.0958972  0.8462679  0.2455671 -0.12332771  1 -2.2686599 -1.4490669
+    ## 3 0  0.1767731  0.7904544 -0.8435734  0.82365740  1 -0.2220610  0.2970925
+    ## 4 0 -0.4595239  0.1725907  1.9542266 -0.62661325  1 -0.4018875 -0.8294041
+    ## 5 1  0.3563142 -1.8120759  0.8134872 -0.67188804  1 -0.8297074  1.7296758
+    ## 6 0 -2.4312962 -1.7983652 -1.2939700  0.04609167  1 -1.2418889 -1.1252320
+    ##           X8          X9         Y_C Y_B        Y_S
+    ## 1 -0.4840279 -0.59385184  0.07104125   0  278.45921
+    ## 2 -0.5514441 -0.31439333  0.15618693   0  330.62919
+    ## 3 -0.6966028 -0.69515666 -0.85179850   1  369.94056
+    ## 4 -0.5383526  0.20729344 -2.35183911   0   91.06106
+    ## 5 -0.6438651 -0.02647566  0.68057840   0  182.72605
+    ## 6 -1.8658885 -0.56513308 -5.62259966   0 2563.73131
+
+``` r
+mNN <- matchit(A ~ X1 + X2 + X3 + X4 + X5 + 
+                 X6 + X7 + X8 + X9, data = d)
+
+mNN
+```
+
+    ## A matchit object
+    ##  - method: 1:1 nearest neighbor matching without replacement
+    ##  - distance: Propensity score
+    ##              - estimated with logistic regression
+    ##  - number of obs.: 2000 (original), 882 (matched)
+    ##  - target estimand: ATT
+    ##  - covariates: X1, X2, X3, X4, X5, X6, X7, X8, X9
+
+``` r
+md <- match.data(mNN)
+
+head(md)
+```
+
+    ##    A         X1         X2         X3         X4 X5         X6         X7
+    ## 1  0  0.1725432 -1.4282682 -0.4102538 -2.3605939  1 -1.1198630  0.6397597
+    ## 3  0  0.1767731  0.7904544 -0.8435734  0.8236574  1 -0.2220610  0.2970925
+    ## 5  1  0.3563142 -1.8120759  0.8134872 -0.6718880  1 -0.8297074  1.7296758
+    ## 9  0  0.7807950  1.3137166  0.6580342  0.8539807  1  0.9495019 -0.5730730
+    ## 10 1 -0.5651300 -0.1053473 -0.1368541  1.6232841  1 -0.5303725 -0.3341707
+    ## 11 0  0.0705263 -0.1319709 -1.8881648  0.3076618  0 -1.6558365  0.8405124
+    ##            X8          X9         Y_C Y_B        Y_S   distance weights
+    ## 1  -0.4840279 -0.59385184  0.07104125   0  278.45921 0.08460901       1
+    ## 3  -0.6966028 -0.69515666 -0.85179850   1  369.94056 0.22210416       1
+    ## 5  -0.6438651 -0.02647566  0.68057840   0  182.72605 0.43290668       1
+    ## 9  -0.2362267 -0.14580271 15.89771407   1   67.53084 0.15751364       1
+    ## 10  0.4183507  0.46308458  1.07888291   1  113.69659 0.16697023       1
+    ## 11 -0.5723312 -1.01382183 -6.55596546   0 1632.68627 0.45622858       1
+    ##    subclass
+    ## 1       167
+    ## 3       210
+    ## 5       322
+    ## 9         3
+    ## 10        1
+    ## 11      298
+
+``` r
+#Linear model without covariates
+fit1 <- lm(Y_C ~ A, data = md, weights = weights)
+summary(fit1)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = Y_C ~ A, data = md, weights = weights)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -20.7905  -4.0539  -0.1823   3.8825  23.5382 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   1.7795     0.2955   6.022 2.52e-09 ***
+    ## A             2.1144     0.4179   5.060 5.10e-07 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 6.205 on 880 degrees of freedom
+    ## Multiple R-squared:  0.02827,    Adjusted R-squared:  0.02717 
+    ## F-statistic:  25.6 on 1 and 880 DF,  p-value: 5.103e-07
+
+``` r
+#Cluster-robust standard errors
+coeftest(fit1, vcov. = vcovCL, cluster = ~subclass)
+```
+
+    ## 
+    ## t test of coefficients:
+    ## 
+    ##             Estimate Std. Error t value  Pr(>|t|)    
+    ## (Intercept)  1.77946    0.30255  5.8816 5.768e-09 ***
+    ## A            2.11440    0.40857  5.1751 2.822e-07 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+# data(sanction)
+# zqi.out <- zelig(num ~ target + coop + mil, 
+#                  model = "poisson", data = sanction, cite = FALSE)
+# 
+# # find the ATT where the treatement is mil = 1
+# z.att <- zqi.out %>%
+#              ATT(treatment = "mil", treat = 1) %>% 
+#              get_qi(qi = "ATT", xvalue = "TE")
+# 
+# # summarize the results
+# hist(z.att, 
+#      main = NULL,
+#      xlab ="Average Treatment Effect of mil on the Treated")
+
+s
+```
+
+    ## function (..., k = -1, fx = FALSE, bs = "tp", m = NA, by = NA, 
+    ##     xt = NULL, id = NULL, sp = NULL, pc = NULL) 
+    ## {
+    ##     vars <- as.list(substitute(list(...)))[-1]
+    ##     d <- length(vars)
+    ##     by.var <- deparse(substitute(by), backtick = TRUE, width.cutoff = 500)
+    ##     if (by.var == ".") 
+    ##         stop("by=. not allowed")
+    ##     term <- deparse(vars[[1]], backtick = TRUE, width.cutoff = 500)
+    ##     if (term[1] == ".") 
+    ##         stop("s(.) not supported.")
+    ##     if (d > 1) 
+    ##         for (i in 2:d) {
+    ##             term[i] <- deparse(vars[[i]], backtick = TRUE, width.cutoff = 500)
+    ##             if (term[i] == ".") 
+    ##                 stop("s(.) not yet supported.")
+    ##         }
+    ##     for (i in 1:d) term[i] <- attr(terms(reformulate(term[i])), 
+    ##         "term.labels")
+    ##     k.new <- round(k)
+    ##     if (all.equal(k.new, k) != TRUE) {
+    ##         warning("argument k of s() should be integer and has been rounded")
+    ##     }
+    ##     k <- k.new
+    ##     if (length(unique(term)) != d) 
+    ##         stop("Repeated variables as arguments of a smooth are not permitted")
+    ##     full.call <- paste("s(", term[1], sep = "")
+    ##     if (d > 1) 
+    ##         for (i in 2:d) full.call <- paste(full.call, ",", term[i], 
+    ##             sep = "")
+    ##     label <- paste(full.call, ")", sep = "")
+    ##     if (!is.null(id)) {
+    ##         if (length(id) > 1) {
+    ##             id <- id[1]
+    ##             warning("only first element of `id' used")
+    ##         }
+    ##         id <- as.character(id)
+    ##     }
+    ##     ret <- list(term = term, bs.dim = k, fixed = fx, dim = d, 
+    ##         p.order = m, by = by.var, label = label, xt = xt, id = id, 
+    ##         sp = sp)
+    ##     if (!is.null(pc)) {
+    ##         if (length(pc) < d) 
+    ##             stop("supply a value for each variable for a point constraint")
+    ##         if (!is.list(pc)) 
+    ##             pc <- as.list(pc)
+    ##         if (is.null(names(pc))) 
+    ##             names(pc) <- unlist(lapply(vars, all.vars))
+    ##         ret$point.con <- pc
+    ##     }
+    ##     class(ret) <- paste(bs, ".smooth.spec", sep = "")
+    ##     ret
+    ## }
+    ## <bytecode: 0x7ff213551930>
+    ## <environment: namespace:mgcv>
+
+## TWANG IPTW
+
+<https://www.rand.org/statistics/twang/r-tutorial.html>
+
+``` r
+set.seed(1)
+
+ps.lalonde <- ps(treat ~ age + educ + black + hispan + nodegree + 
+                   married + re74 + re75,
+                 data = lalonde,
+                 n.trees=5000,
+                 interaction.depth=2,
+                 shrinkage=0.01,
+                 perm.test.iters=0,
+                 stop.method=c("es.mean","ks.max"),
+                 estimand = "ATT",
+                 verbose=FALSE)
+
+plot(ps.lalonde)
+```
+
+![](Lalonde_files/figure-gfm/twang-1.png)<!-- -->
+
+``` r
+summary(ps.lalonde)
+```
+
+    ##             n.treat n.ctrl ess.treat  ess.ctrl    max.es    mean.es    max.ks
+    ## unw             185    429       185 429.00000 1.7567745 0.56872589 0.6404460
+    ## es.mean.ATT     185    429       185  22.96430 0.2177817 0.07746175 0.1223384
+    ## ks.max.ATT      185    429       185  27.05472 0.2348846 0.08025994 0.1070761
+    ##             max.ks.p    mean.ks iter
+    ## unw               NA 0.27024507   NA
+    ## es.mean.ATT       NA 0.06361021 2127
+    ## ks.max.ATT        NA 0.06282432 1756
+
+``` r
+summary(
+  ps.lalonde$gbm.obj,
+        n.trees=ps.lalonde$desc$ks.max.ATT$n.trees,
+        plot=FALSE)
+```
+
+    ##               var     rel.inf
+    ## black       black 57.83094183
+    ## age           age 16.51591133
+    ## re74         re74 15.61359263
+    ## re75         re75  3.58011684
+    ## married   married  3.02141880
+    ## educ         educ  2.91556075
+    ## nodegree nodegree  0.44174805
+    ## hispan     hispan  0.08070978
+
+``` r
+lalonde.balance <- bal.table(ps.lalonde)
+
+lalonde.balance
+```
+
+    ## $unw
+    ##             tx.mn    tx.sd    ct.mn    ct.sd std.eff.sz   stat     p    ks
+    ## age        25.816    7.155   28.030   10.787     -0.309 -2.994 0.003 0.158
+    ## educ       10.346    2.011   10.235    2.855      0.055  0.547 0.584 0.111
+    ## black       0.843    0.365    0.203    0.403      1.757 19.371 0.000 0.640
+    ## hispan      0.059    0.237    0.142    0.350     -0.349 -3.413 0.001 0.083
+    ## nodegree    0.708    0.456    0.597    0.491      0.244  2.716 0.007 0.111
+    ## married     0.189    0.393    0.513    0.500     -0.824 -8.607 0.000 0.324
+    ## re74     2095.574 4886.620 5619.237 6788.751     -0.721 -7.254 0.000 0.447
+    ## re75     1532.055 3219.251 2466.484 3291.996     -0.290 -3.282 0.001 0.288
+    ##          ks.pval
+    ## age        0.003
+    ## educ       0.074
+    ## black      0.000
+    ## hispan     0.317
+    ## nodegree   0.074
+    ## married    0.000
+    ## re74       0.000
+    ## re75       0.000
+    ## 
+    ## $es.mean.ATT
+    ##             tx.mn    tx.sd    ct.mn    ct.sd std.eff.sz   stat     p    ks
+    ## age        25.816    7.155   25.802    7.279      0.002  0.015 0.988 0.122
+    ## educ       10.346    2.011   10.573    2.089     -0.113 -0.706 0.480 0.099
+    ## black       0.843    0.365    0.842    0.365      0.003  0.027 0.978 0.001
+    ## hispan      0.059    0.237    0.042    0.202      0.072  0.804 0.421 0.017
+    ## nodegree    0.708    0.456    0.609    0.489      0.218  0.967 0.334 0.099
+    ## married     0.189    0.393    0.189    0.392      0.002  0.012 0.990 0.001
+    ## re74     2095.574 4886.620 1556.930 3801.566      0.110  1.027 0.305 0.066
+    ## re75     1532.055 3219.251 1211.575 2647.615      0.100  0.833 0.405 0.103
+    ##          ks.pval
+    ## age        0.892
+    ## educ       0.977
+    ## black      1.000
+    ## hispan     1.000
+    ## nodegree   0.977
+    ## married    1.000
+    ## re74       1.000
+    ## re75       0.969
+    ## 
+    ## $ks.max.ATT
+    ##             tx.mn    tx.sd    ct.mn    ct.sd std.eff.sz   stat     p    ks
+    ## age        25.816    7.155   25.764    7.408      0.007  0.055 0.956 0.107
+    ## educ       10.346    2.011   10.572    2.140     -0.113 -0.712 0.477 0.107
+    ## black       0.843    0.365    0.835    0.371      0.022  0.187 0.852 0.008
+    ## hispan      0.059    0.237    0.043    0.203      0.069  0.779 0.436 0.016
+    ## nodegree    0.708    0.456    0.601    0.490      0.235  1.100 0.272 0.107
+    ## married     0.189    0.393    0.199    0.400     -0.024 -0.169 0.866 0.010
+    ## re74     2095.574 4886.620 1673.666 3944.600      0.086  0.800 0.424 0.054
+    ## re75     1532.055 3219.251 1257.242 2674.922      0.085  0.722 0.471 0.094
+    ##          ks.pval
+    ## age        0.919
+    ## educ       0.919
+    ## black      1.000
+    ## hispan     1.000
+    ## nodegree   0.919
+    ## married    1.000
+    ## re74       1.000
+    ## re75       0.971
+
+``` r
+plot(ps.lalonde, plots=2)
+```
+
+![](Lalonde_files/figure-gfm/twang-2.png)<!-- -->
+
+``` r
+plot(ps.lalonde, plots=3)
+```
+
+![](Lalonde_files/figure-gfm/twang-3.png)<!-- -->
+
+``` r
+plot(ps.lalonde, plots = 4)
+```
+
+![](Lalonde_files/figure-gfm/twang-4.png)<!-- -->
+
+``` r
+plot(ps.lalonde, plots = 5)
+```
+
+![](Lalonde_files/figure-gfm/twang-5.png)<!-- -->
+
+``` r
+plot(ps.lalonde, plots = 3, subset = 2)
+```
+
+![](Lalonde_files/figure-gfm/twang-6.png)<!-- -->
+
+``` r
+# A separate R package, the survey package, is useful for performing the outcomes analyses using weights. Its statistical methods account for the weights when computing standard error estimates. It is not a part of the standard R installation but installing twang should automatically install survey as well.
+# 
+# > library(survey)
+# 
+# The get.weights() function extracts the propensity score weights from a ps object. Those weights may then be used as case weights in a svydesign object. By default, it returns weights corresponding to the estimand (ATE or ATT) that was specified in the original call to ps(). If needed, the user can override the default via the optional estimand argument.
+
+lalonde$w <- get.weights(ps.lalonde, stop.method="es.mean")
+
+design.ps <- svydesign(ids=~1, weights=~w, data=lalonde)
+
+glm1 <- svyglm(re78 ~ treat, design=design.ps)
+
+summary(glm1)
+```
+
+    ## 
+    ## Call:
+    ## svyglm(formula = re78 ~ treat, design = design.ps)
+    ## 
+    ## Survey design:
+    ## svydesign(ids = ~1, weights = ~w, data = lalonde)
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   5616.6      884.9   6.347 4.28e-10 ***
+    ## treat          732.5     1056.6   0.693    0.488    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 49804197)
+    ## 
+    ## Number of Fisher Scoring iterations: 2
+
+The analysis estimates an increase in earnings of $733 for those that
+participated in the
+
+NSW compared with similarly situated people observed in the CPS. The
+effect, however, does not appear to be statistically significant.
+
+#### TWANG Doubly Robust
+
+Some authors have recommended utilizing both propensity score adjustment
+and additional covariate adjustment to minimize mean square error or to
+obtain “doubly robust” estimates of the treatment effect
+(Huppler-Hullsiek & Louis 2002, Bang & Robins 2005). These estimators
+are consistent if either the propensity scores are estimated correctly
+or the regression model is specified correctly. For example, note that
+the balance table for ks.max.ATT made the two groups more similar on
+nodegree, but still some differences remained, 70.8% of the treatment
+group had no degree while 60.1% of the comparison group had no degree.
+While linear regression is sensitive to model misspecification when the
+treatment and comparison groups are dissimilar, the propensity score
+weighting has made them more similar, perhaps enough so that additional
+modeling with covariates can adjust for any remaining differences. In
+addition to potential bias reduction, the inclusion of additional
+covariates can reduce the standard error of the treatment effect if some
+of the covariates are strongly related to the outcome.
+
+``` r
+glm2 <- svyglm(re78 ~ treat + nodegree, design=design.ps)
+
+summary(glm2)
+```
+
+    ## 
+    ## Call:
+    ## svyglm(formula = re78 ~ treat + nodegree, design = design.ps)
+    ## 
+    ## Survey design:
+    ## svydesign(ids = ~1, weights = ~w, data = lalonde)
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   6768.4     1471.0   4.601 5.11e-06 ***
+    ## treat          920.3     1082.8   0.850    0.396    
+    ## nodegree     -1891.8     1261.9  -1.499    0.134    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 49013778)
+    ## 
+    ## Number of Fisher Scoring iterations: 2
+
+Adjusting for the remaining group difference in the nodegree variable
+slightly increased the
+
+estimate of the program’s effect to $920, but the difference is still
+not statistically significant. We can further adjust for the other
+covariates, but that too in this case has little effect on the estimated
+program effect.
+
+``` r
+glm3 <- svyglm(re78 ~ treat + age + educ + black + hispan + nodegree +
+                 married + re74 + re75,
+               design=design.ps)
+
+summary(glm3)
+```
+
+    ## 
+    ## Call:
+    ## svyglm(formula = re78 ~ treat + age + educ + black + hispan + 
+    ##     nodegree + married + re74 + re75, design = design.ps)
+    ## 
+    ## Survey design:
+    ## svydesign(ids = ~1, weights = ~w, data = lalonde)
+    ## 
+    ## Coefficients:
+    ##               Estimate Std. Error t value Pr(>|t|)   
+    ## (Intercept) -2.459e+03  4.289e+03  -0.573  0.56671   
+    ## treat        7.585e+02  1.019e+03   0.745  0.45674   
+    ## age          3.005e+00  5.558e+01   0.054  0.95691   
+    ## educ         7.488e+02  2.596e+02   2.884  0.00406 **
+    ## black       -7.627e+02  1.012e+03  -0.753  0.45153   
+    ## hispan       6.106e+02  1.711e+03   0.357  0.72123   
+    ## nodegree     5.350e+02  1.626e+03   0.329  0.74227   
+    ## married      4.918e+02  1.072e+03   0.459  0.64660   
+    ## re74         5.699e-02  1.801e-01   0.316  0.75176   
+    ## re75         1.568e-01  1.946e-01   0.806  0.42076   
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 47150852)
+    ## 
+    ## Number of Fisher Scoring iterations: 2
+
+#### TWANG LM
+
+The more traditional regression approach to estimating the program
+effect would fit a linear model with a treatment indicator and linear
+terms for each of the covariates.
+
+``` r
+glm4 <- lm(re78 ~ treat + age + educ + black + hispan + nodegree +
+             married + re74 + re75,
+           data=lalonde)
+
+summary(glm4)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = re78 ~ treat + age + educ + black + hispan + nodegree + 
+    ##     married + re74 + re75, data = lalonde)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -13595  -4894  -1662   3929  54570 
+    ## 
+    ## Coefficients:
+    ##               Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)  6.651e+01  2.437e+03   0.027   0.9782    
+    ## treat        1.548e+03  7.813e+02   1.982   0.0480 *  
+    ## age          1.298e+01  3.249e+01   0.399   0.6897    
+    ## educ         4.039e+02  1.589e+02   2.542   0.0113 *  
+    ## black       -1.241e+03  7.688e+02  -1.614   0.1071    
+    ## hispan       4.989e+02  9.419e+02   0.530   0.5966    
+    ## nodegree     2.598e+02  8.474e+02   0.307   0.7593    
+    ## married      4.066e+02  6.955e+02   0.585   0.5590    
+    ## re74         2.964e-01  5.827e-02   5.086 4.89e-07 ***
+    ## re75         2.315e-01  1.046e-01   2.213   0.0273 *  
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 6948 on 604 degrees of freedom
+    ## Multiple R-squared:  0.1478, Adjusted R-squared:  0.1351 
+    ## F-statistic: 11.64 on 9 and 604 DF,  p-value: < 2.2e-16
+
+This model estimates a rather strong treatment effect, estimating a
+program effect of `$`1548 with a p-value=0.048. Several variations of
+this regression approach also estimate strong program effects. For
+example using square root transforms on the earnings variables yields a
+p- value=0.016. These estimates, however, are very sensitive to the
+model structure since the treatment and control subjects differ greatly
+as seen in the unweighted balance comparison ($unw) from
+bal.table(ps.lalonde).

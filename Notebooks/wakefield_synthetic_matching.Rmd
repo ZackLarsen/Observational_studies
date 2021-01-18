@@ -130,6 +130,10 @@ kable(table4[,1:3],
 
 ## Post match modeling
 
+
+#### Linear modeling
+
+
 ```{r post_match_model}
 
 hist(df.match$Distress)
@@ -139,6 +143,25 @@ lm(Distress ~ Group, data = df.match)
 
 lm(Distress ~ Group + Age + Sex, data = df.match)
 
+# Linear regression using GLM()
+glm(Distress ~ Group, data = df.match, family = Gaussian(link = "identity"))
+
+```
+
+
+#### Logistic GLM
+
+
+```{r logistic, eval = FALSE}
+
+# Logistic regression is binomial with "logit" link
+logistic_mod <- glm(treat ~ re74 + re75, data = lalonde, family = binomial(link="logit"))
+# Output of above will be log-odds in the "estimate" column
+# By exponentiating the coefficients, we can get the odds
+exp(logistic_mod$coef)
+
+summary(logistic_mod)
+confint(logistic_mod)
 
 
 ```

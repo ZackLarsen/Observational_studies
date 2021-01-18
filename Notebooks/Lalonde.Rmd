@@ -100,9 +100,11 @@ plot(fit.gamma)
 
 ```
 
-## Matching
+ ## Matching
 
-```{r matchit}
+#### Nearest neighbor 1:1 match
+
+```{r match_1}
 
 
 match_1 <- matchit(formula = treat ~ age + educ + black + hispan + married + 
@@ -158,35 +160,66 @@ head(match_1_data)
 ```
 
 
-## Linear Modeling
+#### Full matching (match 2)
 
-#### Assumptions:
-* Linearity
-* Homoscedasticity
-* Independence
-* Normality
+From MatchIt reference:
 
-http://www.sthda.com/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/
+Given the poor performance of nearest neighbor matching in this example, we can try a different matching method or make other changes to the matching algorithm or distance specification. Below, we’ll try full matching, which matches every treated unit to at least one control and every control to at least one treated unit (Hansen 2004; Stuart and Green 2008). We’ll also try a different link (probit) for the propensity score model.
 
-https://data.library.virginia.edu/diagnostic-plots/
-
-```{r lin_mod}
-
-plot(lalonde$re78)
+```{r match_2}
 
 
-# Pre-match data:
-prematch_lm <- lm(re78 ~ treat, data = lalonde)
+match_2 <- matchit(formula = treat ~ age + educ + black + hispan + married + 
+                   nodegree + re74 + re75, 
+        method = "full",
+        distance = "glm",
+        link = "probit",
+        data = lalonde,
+        discard = "both"
+        #replace = FALSE, 
+        #caliper = c(),
+        #std.caliper = c(),
+        #ratio = 1
+        )
 
-# Matched data:
-matched_lm <- lm(re78 ~ treat, data = match.data(match_1), weights = weights)
+match_2
+
+summary(match_2, subclass = TRUE, un = FALSE)
+
+```
 
 
+#### Match diagnostics (match 2)
 
-autoplot(prematch_lm) +
-  theme_abyss()
-  #theme_minimal() + 
-  #theme_ft_rc()
+```{r diagnostics2}
+
+summary(match_2)
+
+plot(summary(match_2))
+
+love.plot(bal.tab(match_2), stars = "std")
+
+# Examining distributional balance with plots:
+bal.plot(match_2, var.name = "nodegree")
+bal.plot(match_2, var.name = "distance", mirror = TRUE, type = "histogram")
+
+
+plot(match_2, type = "jitter", interactive = FALSE)
+
+plot(match_2, type = "qq", interactive = FALSE,
+     which.xs = c("age", "married", "re75"))
+
+#eCDF plot
+plot(match_2, type = "ecdf", which.xs = c("educ", "married", "re75"))
+
+```
+
+
+#### Matched data (match 2)
+
+```{r md2}
+
+match_2_data <- match.data(match_2)
 
 ```
 
@@ -201,10 +234,48 @@ Even though the 1:1 matching was not successful, we’ll demonstrate here how to
 
 We can then estimate a treatment effect in this dataset using the standard regression functions in R, like lm() or glm(), being sure to include the matching weights (stored in the weights variable of the match.data() output) in the estimation3. We recommend using cluster-robust standard errors for most analyses, with pair membership as the clustering variable; the lmtest and sandwich packages together make this straightforward.
 
-```{r sandwich}
+Although there are many possible ways to include covariates (i.e., not just main effects but interactions, smoothing terms like splines, or other nonlinear transformations), it is important not to engage in specification search (i.e., trying many outcomes models in search of the “best” one). Doing so can invalidate results and yield a conclusion that fails to replicate. For this reason, we recommend only including the same terms included in the propensity score model unless there is a strong a priori and justifiable reason to model the outcome differently. Second, it is important not to interpret the coefficients and tests of the other covariates in the outcome model. These are not causal effects and their estimates may be severely confounded. Only the treatment effect estimate can be interpreted as causal assuming the relevant assumptions about unconfoundedness are met. **Inappropriately interpreting the coefficients of covariates in the outcome model is known as the Table 2 fallacy** (Westreich and Greenland 2013). To avoid this, in all examples that incorporate covariates in the outcome model, we restrict the output of outcome regression models to just the treatment coefficient.
 
-library("lmtest") #coeftest
-library("sandwich") #vcovCL
+
+#### Linear Modeling
+
+#### Assumptions:
+* Linearity
+* Homoscedasticity
+* Independence
+* Normality
+
+http://www.sthda.com/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/
+
+https://data.library.virginia.edu/diagnostic-plots/
+
+```{r assumptions}
+
+
+
+```
+
+
+#### Pre-match data model
+
+```{r pre_match_mod}
+
+plot(lalonde$re78)
+
+# Pre-match data:
+prematch_lm <- lm(re78 ~ treat, data = lalonde)
+
+autoplot(prematch_lm) +
+  theme_abyss()
+  #theme_minimal() + 
+  #theme_ft_rc()
+
+```
+
+
+#### Model 1 sandwich 
+
+```{r sandwich1}
 
 fit1 <- lm(re78 ~ treat + age + educ + black + hispan + married + nodegree + 
              re74 + re75, 
@@ -216,12 +287,29 @@ coeftest(fit1, vcov. = vcovCL, cluster = ~subclass)
 ```
 
 
+#### Model 2 sandwich
+
+```{r sandwich2}
+
+fit2 <- lm(re78 ~ treat + age + educ + black + hispan + married + nodegree + 
+             re74 + re75, 
+           data = match_2_data, 
+           weights = weights)
+
+coeftest(fit2, vcov. = vcovCL, cluster = ~subclass)
+
+```
+
+Note that the "treat" coefficient in the linear regression model for the first match is not statistically significant, but it is in the linear regression model for the second match.
+
+
 ## Uncertainty / confidence intervals
 
+#### Match 1 bootstrap
 
 https://kosukeimai.github.io/MatchIt/articles/estimating-effects.html#after-pair-matching-with-replacement-1
 
-```{r uncertainty}
+```{r uncertainty1}
 
 #Block bootstrap confidence interval
 # library(boot)
@@ -242,7 +330,8 @@ est_fun <- function(pairs, i) {
   md_boot <- match_1_data[ids,]
   
   #Effect estimation
-  fit_boot <- lm(re78 ~ treat,
+  fit_boot <- lm(re78 ~ treat + age + educ + black + hispan + married + nodegree + 
+             re74 + re75,
                  data = md_boot,
                  weights = weights)
   
@@ -250,7 +339,7 @@ est_fun <- function(pairs, i) {
   return(coef(fit_boot)["treat"])
 }
 
-boot_est <- boot(pair_ids, est_fun, R = 499)
+boot_est <- boot(pair_ids, est_fun, R = 999)
 boot_est
 
 
@@ -258,7 +347,48 @@ boot.ci(boot_est, type = "bca")
 
 ```
 
+
+#### Match 2 bootstrap
+
 https://moderndive.com/10-inference-for-regression.html is another helpful resource in addition to the above link from Kosuke Imai
+
+```{r uncertainty2}
+
+#Block bootstrap confidence interval
+# library(boot)
+
+pair_ids <- levels(match_2_data$subclass)
+
+est_fun <- function(pairs, i) {
+  
+  #Compute number of times each pair is present
+  numreps <- table(pairs[i])
+  
+  #For each pair p, copy corresponding md row indices numreps[p] times
+  ids <- unlist(lapply(pair_ids[pair_ids %in% names(numreps)],
+                       function(p) rep(which(match_2_data$subclass == p), 
+                                              numreps[p])))
+  
+  #Subset md with block bootstrapped ids
+  md_boot <- match_1_data[ids,]
+  
+  #Effect estimation
+  fit_boot <- lm(re78 ~ treat + age + educ + black + hispan + married + nodegree +
+                   re74 + re75,
+                 data = md_boot,
+                 weights = weights)
+  
+  #Return the coefficient on treatment
+  return(coef(fit_boot)["treat"])
+}
+
+boot_est <- boot(pair_ids, est_fun, R = 999)
+boot_est
+
+
+boot.ci(boot_est, type = "bca")
+
+```
 
 
 ## Generalized Linear Modeling
@@ -270,38 +400,43 @@ See https://fromthebottomoftheheap.net/2016/06/07/rootograms/
 ```{r glm}
 
 
-
-
 # Gaussian-distributed residuals and identity link = OLS:
-gaussian_identity <- glm(re78 ~ treat, data = lalonde, family=gaussian(link = "identity"))
+gaussian_identity <- glm(re78 ~ treat + age + educ + black + hispan + married + nodegree + re74 + re75, 
+                         data = match_2_data, 
+                         family = gaussian(link = "identity"),
+                         weights = weights)
 summary(gaussian_identity)
 
+
+
 # Gamma default link is "inverse"
-gamma_inverse <- glm(re78 + 1 ~ treat, data = lalonde, family=Gamma(link = "inverse"))
+gamma_inverse <- glm(re78 + 1 ~ treat + age + educ + black + hispan + married + nodegree + re74 + re75, data = match_2_data, family = Gamma(link = "inverse"))
 summary(gamma_inverse)
 
+
+
+
 # Using log link
-gamma_log <- glm(re78 + 1 ~ treat, data = lalonde, family=Gamma(link = "log"))
-summary(gamma_log)
-plot(rstudent(gamma_log))
-plot(influence(gamma_log)$hat)
-plot(cooks.distance(gamma_log))
+# gamma_log <- glm(re78 + 1 ~ treat + age + educ + black + hispan + married + nodegree + re74 + re75, data = match_2_data, family=Gamma(link = "log"))
+# summary(gamma_log)
+
+# # Fixing error from above due to inf values:
+# match_2_data_new <- match_2_data # Duplicate data
+# match_2_data_new[is.na(match_2_data_new) | match_2_data_new == "Inf"] <- NA  # Replace NaN & Inf with NA
+# 
+# # Add in positive constant:
+# match_2_data_new$re78 <- match_2_data_new$re78 + 1
+# 
+# gamma_log <- glm(re78 ~ treat + age + educ + black + hispan + married + nodegree + re74 + re75, 
+#                  data = match_2_data_new, 
+#                  family = Gamma(link = "log"),
+#                  weights = weights)
+# summary(gamma_log)
+
+
+# plot(rstudent(gamma_log))
+# plot(influence(gamma_log)$hat)
+# plot(cooks.distance(gamma_log))
 
 ```
 
-
-## Logistic GLM
-
-```{r logistic}
-
-# Logistic regression is binomial with "logit" link
-logistic_mod <- glm(treat ~ re74 + re75, data = lalonde, family = binomial(link="logit"))
-# Output of above will be log-odds in the "estimate" column
-# By exponentiating the coefficients, we can get the odds
-exp(logistic_mod$coef)
-
-summary(logistic_mod)
-confint(logistic_mod)
-
-
-```

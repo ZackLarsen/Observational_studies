@@ -21,10 +21,11 @@ p_load(
   
   # Matching
   MatchIt, cobalt, optmatch, rbounds, #genmatch,
-  cem, Matching, Zelig, twang,
+  cem, Matching, Zelig, twang, quickmatch,
   stddiff,
   glm2, speedglm, pscl,
-  mitools,
+  mitools, margins, survey, survival,
+  lmerTest,
   
   # Convenience
   docstring, broom, scales, lobstr, janitor, glue,

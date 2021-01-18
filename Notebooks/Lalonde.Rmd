@@ -1,11 +1,12 @@
 ---
 title: "Lalonde"
 output: github_document
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
 
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 library(here)
 
@@ -69,50 +70,9 @@ hist(lalonde$re78, )
 hist(log(lalonde$re78))
 
 
-
-
-hp <- ggplot(lalonde, aes(x=age)) + 
-  geom_histogram(binwidth=2,colour="white",fill="skyblue")
-ggplotly(hp)
-# Divide by levels of treatment, in the horizontal direction
-hp + facet_grid(. ~ treat)
-
-
-
-hp <- ggplot(lalonde, aes(x=educ)) + 
-  geom_histogram(binwidth=2,colour="white",fill="skyblue")
-hp + facet_grid(. ~ treat)
-
-
-
-
-hp <- ggplot(lalonde, aes(x=treat)) + 
-  geom_histogram(binwidth=2,colour="white",fill="skyblue")
-hp + facet_grid(. ~ re75)
-
-
-
-
-
-
-
-# Boxplots with facet grid for treatment indicator:
-
-dfmelt<-melt(lalonde, measure.vars = 2:10)
-dfmelt
-
-p <- ggplot(dfmelt, aes(x=factor(round(treat,0.5)), y=value,fill=variable))+
-  geom_boxplot()+
-  facet_grid(.~variable)+
-  labs(x="X (binned)")+
-  theme(axis.text.x=element_text(angle=-90, vjust=0.4,hjust=1))
-
-p <- ggplotly(p)
-p
-
-
-p + facet_grid(treat ~ .)
-
+ggplot(lalonde, aes(x=age)) + 
+  geom_histogram(binwidth=2,colour="white",fill="skyblue") +
+  facet_grid(. ~ treat)
 
 
 ```

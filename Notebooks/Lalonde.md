@@ -1061,47 +1061,55 @@ hist(log(lalonde$re78))
 
 ![](Lalonde_files/figure-gfm/eda3-2.png)<!-- -->
 
+``` r
+ggplot(lalonde, aes(x=age)) + 
+  geom_histogram(binwidth=2,colour="white",fill="skyblue") +
+  facet_grid(. ~ treat)
+```
+
+![](Lalonde_files/figure-gfm/eda3-3.png)<!-- -->
+
 ## Distribution Fitting
 
 ``` r
 rgamma(100,2,11)
 ```
 
-    ##   [1] 0.15300378 0.19365721 0.02078028 0.06171868 0.26755170 0.09892419
-    ##   [7] 0.20685886 0.18692776 0.02057308 0.25049702 0.21342502 0.17853744
-    ##  [13] 0.06964347 0.13524327 0.27223087 0.44004835 0.15234850 0.07626263
-    ##  [19] 0.27892517 0.03495172 0.24117406 0.05169215 0.05738705 0.07294351
-    ##  [25] 0.27029362 0.15523069 0.25266445 0.31655484 0.27796013 0.12032632
-    ##  [31] 0.28687707 0.07487566 0.23085721 0.29210373 0.30206995 0.26283678
-    ##  [37] 0.14189109 0.09929553 0.03677541 0.08963286 0.24139597 0.06111946
-    ##  [43] 0.08325441 0.04420482 0.06926101 0.42553498 0.37716979 0.27482229
-    ##  [49] 0.22685712 0.14186912 0.33674533 0.27855262 0.01321559 0.20282956
-    ##  [55] 0.05736001 0.29162376 0.15730309 0.01347663 0.07611053 0.26681036
-    ##  [61] 0.19497511 0.04363213 0.26850288 0.03386998 0.09975404 0.15087790
-    ##  [67] 0.08735132 0.46010125 0.09891519 0.21560155 0.09800034 0.19904466
-    ##  [73] 0.24763711 0.02255810 0.45716214 0.12175974 0.40448107 0.11880157
-    ##  [79] 0.12739359 0.27978731 0.40242834 0.16385710 0.08762090 0.22256492
-    ##  [85] 0.25193377 0.14218107 0.28313119 0.11266754 0.26019921 0.13838882
-    ##  [91] 0.10895801 0.18053138 0.13067646 0.20623484 0.12013119 0.60148981
-    ##  [97] 0.13572865 0.05231860 0.20382792 0.16744679
+    ##   [1] 0.39090155 0.14290748 0.24749231 0.18221722 0.32498125 0.09735033
+    ##   [7] 0.08707774 0.10288162 0.05973538 0.08782953 0.40695090 0.06702954
+    ##  [13] 0.07308661 0.08729129 0.10793894 0.41861446 0.22954049 0.16970791
+    ##  [19] 0.04740438 0.03651960 0.16208711 0.48106521 0.07178044 0.09332868
+    ##  [25] 0.23498252 0.26835056 0.12647627 0.08939361 0.34584458 0.22493662
+    ##  [31] 0.03995445 0.24479645 0.15577913 0.27949253 0.05064557 0.30308798
+    ##  [37] 0.24069438 0.32281229 0.03205937 0.14914058 0.17177630 0.09622535
+    ##  [43] 0.12576500 0.20512223 0.31384264 0.12772726 0.07279863 0.08899243
+    ##  [49] 0.24995097 0.17386712 0.03531694 0.18646637 0.54985634 0.03150224
+    ##  [55] 0.10702473 0.50396453 0.15326068 0.22233015 0.37956474 0.18693554
+    ##  [61] 0.29636599 0.04376780 0.18711181 0.03035442 0.16575838 0.25659729
+    ##  [67] 0.19757182 0.20558609 0.18730177 0.19384702 0.04614302 0.14240108
+    ##  [73] 0.13183539 0.12867458 0.20411620 0.05817618 0.13111003 0.07884362
+    ##  [79] 0.02649797 0.02716294 0.04355484 0.11575180 0.08136138 0.12768103
+    ##  [85] 0.07994316 0.16160696 0.13672469 0.54112843 0.09529893 0.03299794
+    ##  [91] 0.30010668 0.13457696 0.07671852 0.23513013 0.12667637 0.25443860
+    ##  [97] 0.17242709 0.35054193 0.18288972 0.29595389
 
 ``` r
 rnorm(100,5,.01)
 ```
 
-    ##   [1] 5.018696 4.996608 4.992919 5.009292 5.012352 5.000805 5.008366 5.010984
-    ##   [9] 5.009506 4.997635 4.983120 5.006606 5.013719 5.003109 5.009023 4.990362
-    ##  [17] 5.009575 5.008553 4.987662 5.018612 4.986739 4.997769 4.969067 5.003035
-    ##  [25] 5.001461 4.995255 5.008507 4.992627 4.994684 5.010292 5.025217 5.019376
-    ##  [33] 5.010831 5.006432 5.001328 4.992756 4.991536 4.997822 4.995167 4.992166
-    ##  [41] 5.002839 5.002666 4.999314 5.008138 5.005701 5.012506 4.977271 4.994504
-    ##  [49] 4.985989 5.003197 5.006357 5.017640 5.013884 4.991654 4.994927 5.002723
-    ##  [57] 4.986526 5.009798 5.003718 5.005474 5.011291 5.003483 4.992421 4.993746
-    ##  [65] 5.011966 4.978574 4.996382 4.991625 5.028015 4.998488 4.986380 5.020546
-    ##  [73] 4.999018 4.988061 4.993253 5.008424 5.005200 4.996947 5.001317 4.986098
-    ##  [81] 4.994848 4.992306 4.989937 4.993707 5.002591 4.985459 4.989773 4.984784
-    ##  [89] 5.002625 4.996189 4.985848 5.024096 5.021517 5.011650 4.996935 5.014825
-    ##  [97] 4.999589 4.996107 5.018655 5.009051
+    ##   [1] 5.007743 5.000634 5.006550 5.000264 5.002217 4.986529 4.991488 4.997759
+    ##   [9] 4.999089 4.983221 5.009139 4.994541 4.996158 4.991185 4.995985 5.005319
+    ##  [17] 5.002324 4.998264 5.011767 5.003480 5.001102 5.000352 5.007320 4.991131
+    ##  [25] 4.999481 5.001828 5.002281 4.983309 5.001485 5.004420 4.981017 5.008345
+    ##  [33] 5.012118 5.002759 4.997154 4.996609 4.998083 4.990883 4.990911 5.005433
+    ##  [41] 5.011826 5.007764 4.990401 4.999080 5.002612 4.992433 5.008864 5.002348
+    ##  [49] 5.001281 4.993343 5.014481 5.015745 5.000438 5.012566 4.991074 5.014517
+    ##  [57] 4.993495 5.007220 4.990828 4.978998 4.989990 4.992098 4.984229 4.997254
+    ##  [65] 4.986922 4.996546 5.004822 5.002071 4.993596 4.991803 4.997261 5.030890
+    ##  [73] 4.993232 5.002905 4.995414 4.999314 4.999053 5.006765 4.986871 5.003989
+    ##  [81] 4.984494 4.998876 4.998280 4.994113 5.012923 5.014028 5.015332 4.998514
+    ##  [89] 4.987727 5.016585 4.994215 4.997468 4.995161 5.008912 5.000305 4.999141
+    ##  [97] 4.999138 5.023449 4.977399 4.995772
 
 ``` r
 x <- rgamma(10000,2,11) + rnorm(10000,5,.01)
@@ -1112,13 +1120,13 @@ summary(fit.gamma)
     ## Fitting of the distribution ' gamma ' by maximum likelihood 
     ## Parameters : 
     ##        estimate Std. Error
-    ## shape 1649.8416  23.339108
-    ## rate   318.3525   4.504184
-    ## Loglikelihood:  6401.918   AIC:  -12799.84   BIC:  -12785.42 
+    ## shape 1672.6215  23.652321
+    ## rate   322.8423   4.565953
+    ## Loglikelihood:  6473.97   AIC:  -12943.94   BIC:  -12929.52 
     ## Correlation matrix:
     ##           shape      rate
-    ## shape 1.0000000 0.9998486
-    ## rate  0.9998486 1.0000000
+    ## shape 1.0000000 0.9998505
+    ## rate  0.9998505 1.0000000
 
 ``` r
 plot(fit.gamma)
@@ -1135,7 +1143,8 @@ plot(fit.gamma)
 ## Matching
 
 ``` r
-match_1 <- matchit(formula = treat ~ re78, 
+match_1 <- matchit(formula = treat ~ age + educ + black + hispan + married + 
+                   nodegree + re74 + re75, 
         method = "nearest",
         data = lalonde,
         discard = "both", 
@@ -1152,47 +1161,149 @@ match_1
     ##  - distance: Propensity score [common support]
     ##              - estimated with logistic regression
     ##  - common support: units from both groups dropped
-    ##  - number of obs.: 614 (original), 360 (matched)
+    ##  - number of obs.: 614 (original), 354 (matched)
     ##  - target estimand: ATT
-    ##  - covariates: re78
+    ##  - covariates: age, educ, black, hispan, married, nodegree, re74, re75
 
 ``` r
-summary(match_1)
+summary(match_1, )
 ```
 
     ## 
     ## Call:
-    ## matchit(formula = treat ~ re78, data = lalonde, method = "nearest", 
+    ## matchit(formula = treat ~ age + educ + black + hispan + married + 
+    ##     nodegree + re74 + re75, data = lalonde, method = "nearest", 
     ##     discard = "both", replace = FALSE, ratio = 1)
     ## 
     ## Summary of Balance for All Data:
     ##          Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
-    ## distance        0.3024        0.3008          0.0881     1.0875    0.0355
-    ## re78         6349.1435     6984.1697         -0.0807     1.1634    0.0355
+    ## distance        0.5774        0.1822          1.7941     0.9211    0.3774
+    ## age            25.8162       28.0303         -0.3094     0.4400    0.0813
+    ## educ           10.3459       10.2354          0.0550     0.4959    0.0347
+    ## black           0.8432        0.2028          1.7615          .    0.6404
+    ## hispan          0.0595        0.1422         -0.3498          .    0.0827
+    ## married         0.1892        0.5128         -0.8263          .    0.3236
+    ## nodegree        0.7081        0.5967          0.2450          .    0.1114
+    ## re74         2095.5737     5619.2365         -0.7211     0.5181    0.2248
+    ## re75         1532.0553     2466.4844         -0.2903     0.9563    0.1342
     ##          eCDF Max
-    ## distance   0.0986
-    ## re78       0.0986
+    ## distance   0.6444
+    ## age        0.1577
+    ## educ       0.1114
+    ## black      0.6404
+    ## hispan     0.0827
+    ## married    0.3236
+    ## nodegree   0.1114
+    ## re74       0.4470
+    ## re75       0.2876
     ## 
     ## 
     ## Summary of Balance for Matched Data:
     ##          Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
-    ## distance        0.3044        0.3043          0.0017     1.0006    0.0023
-    ## re78         5501.9306     5514.3993         -0.0016     1.0008    0.0023
+    ## distance        0.5669        0.3750          0.8715     0.7562    0.1139
+    ## age            25.4463       25.2316          0.0300     0.4336    0.0870
+    ## educ           10.3220       10.5876         -0.1321     0.6076    0.0235
+    ## black           0.8362        0.4915          0.9479          .    0.3446
+    ## hispan          0.0621        0.2203         -0.6689          .    0.1582
+    ## married         0.1977        0.2090         -0.0289          .    0.0113
+    ## nodegree        0.6949        0.6384          0.1243          .    0.0565
+    ## re74         2179.3904     2348.2864         -0.0346     1.3547    0.0423
+    ## re75         1485.9177     1612.6659         -0.0394     1.4896    0.0491
     ##          eCDF Max Std. Pair Dist.
-    ## distance   0.0167          0.0058
-    ## re78       0.0167          0.0056
+    ## distance   0.3955          0.8718
+    ## age        0.2486          1.4087
+    ## educ       0.0678          1.2392
+    ## black      0.3446          0.9479
+    ## hispan     0.1582          1.0512
+    ## married    0.0113          0.8655
+    ## nodegree   0.0565          0.8450
+    ## re74       0.2542          0.7408
+    ## re75       0.2034          0.7366
     ## 
     ## Percent Balance Improvement:
     ##          Std. Mean Diff. Var. Ratio eCDF Mean eCDF Max
-    ## distance            98.1       99.3      93.6     83.1
-    ## re78                98.0       99.5      93.6     83.1
+    ## distance            51.4     -240.2      69.8     38.6
+    ## age                 90.3       -1.8      -7.0    -57.6
+    ## educ              -140.3       29.0      32.3     39.1
+    ## black               46.2          .      46.2     46.2
+    ## hispan             -91.2          .     -91.2    -91.2
+    ## married             96.5          .      96.5     96.5
+    ## nodegree            49.3          .      49.3     49.3
+    ## re74                95.2       53.8      81.2     43.1
+    ## re75                86.4     -791.7      63.4     29.3
     ## 
     ## Sample Sizes:
     ##           Control Treated
     ## All           429     185
-    ## Matched       180     180
-    ## Unmatched     249       0
-    ## Discarded       0       5
+    ## Matched       177     177
+    ## Unmatched     195       0
+    ## Discarded      57       8
+
+#### Match diagnostics
+
+``` r
+plot(summary(match_1))
+```
+
+![](Lalonde_files/figure-gfm/diagnostics-1.png)<!-- -->
+
+``` r
+plot(bal.tab(match_1))
+```
+
+    ## Warning: Standardized mean differences and raw mean differences are present in the same plot. 
+    ## Use the 'stars' argument to distinguish between them and appropriately label the x-axis.
+
+![](Lalonde_files/figure-gfm/diagnostics-2.png)<!-- -->
+
+``` r
+# Examining distributional balance with plots:
+bal.plot(match_1, var.name = "nodegree")
+```
+
+![](Lalonde_files/figure-gfm/diagnostics-3.png)<!-- -->
+
+``` r
+bal.plot(match_1, var.name = "distance", mirror = TRUE, type = "histogram")
+```
+
+![](Lalonde_files/figure-gfm/diagnostics-4.png)<!-- -->
+
+``` r
+plot(match_1, type = "jitter", interactive = FALSE)
+```
+
+![](Lalonde_files/figure-gfm/diagnostics-5.png)<!-- -->
+
+``` r
+plot(match_1, type = "qq", interactive = FALSE,
+     which.xs = c("age", "married", "re75"))
+```
+
+![](Lalonde_files/figure-gfm/diagnostics-6.png)<!-- -->
+
+## Matched data
+
+``` r
+match_1_data <- match.data(match_1)
+
+head(match_1_data)
+```
+
+    ##   treat age educ black hispan married nodegree re74 re75       re78  distance
+    ## 1     1  37   11     1      0       1        1    0    0  9930.0460 0.6387699
+    ## 2     1  22    9     0      1       0        1    0    0  3595.8940 0.2246342
+    ## 3     1  30   12     1      0       0        0    0    0 24909.4500 0.6782439
+    ## 4     1  27   11     1      0       0        1    0    0  7506.1460 0.7763241
+    ## 5     1  33    8     1      0       0        1    0    0   289.7899 0.7016387
+    ## 6     1  22    9     1      0       0        1    0    0  4056.4940 0.6990699
+    ##   weights subclass
+    ## 1       1        1
+    ## 2       1       94
+    ## 3       1      105
+    ## 4       1      116
+    ## 5       1      127
+    ## 6       1      138
 
 ## Linear Modeling
 
@@ -1239,12 +1350,138 @@ autoplot(prematch_lm) +
   #theme_ft_rc()
 ```
 
+## Estimating the Treatment Effect
+
+<https://kosukeimai.github.io/MatchIt/articles/MatchIt.html>
+
+How treatment effects are estimated depends on what form of matching was
+performed. See vignette(“estimating-effects”) for information on the
+variety of way to estimate effects and standard errors after each type
+of matching and for several outcome types. After 1:1 matching without
+replacement (i.e., the first matching specification above), we can run a
+simple regression of the outcome on the treatment in the matched sample
+(i.e., including the matching weights). With continuous outcomes, it is
+often a good idea to also include the covariates used in the matching in
+the effect estimation, as doing so can provide additional robustness to
+slight imbalances remaining after the matching and can improve
+precision.
+
+Even though the 1:1 matching was not successful, we’ll demonstrate here
+how to estimate a treatment effect after performing such an analysis.
+First, we’ll extract the matched dataset from the matchit object using
+match.data(). This dataset only contains the matched units and adds
+columns for distance, weights, and subclass (described previously).
+
+We can then estimate a treatment effect in this dataset using the
+standard regression functions in R, like lm() or glm(), being sure to
+include the matching weights (stored in the weights variable of the
+match.data() output) in the estimation3. We recommend using
+cluster-robust standard errors for most analyses, with pair membership
+as the clustering variable; the lmtest and sandwich packages together
+make this straightforward.
+
+``` r
+library("lmtest") #coeftest
+library("sandwich") #vcovCL
+
+fit1 <- lm(re78 ~ treat + age + educ + black + hispan + married + nodegree + 
+             re74 + re75, 
+           data = match_1_data, 
+           weights = weights)
+
+coeftest(fit1, vcov. = vcovCL, cluster = ~subclass)
+```
+
+    ## 
+    ## t test of coefficients:
+    ## 
+    ##                Estimate  Std. Error t value Pr(>|t|)  
+    ## (Intercept)  888.366052 3130.466960  0.2838  0.77675  
+    ## treat       1116.038833  709.421069  1.5732  0.11660  
+    ## age           -8.373257   41.839702 -0.2001  0.84150  
+    ## educ         426.186450  193.915458  2.1978  0.02863 *
+    ## black       -917.343709  947.193306 -0.9685  0.33348  
+    ## hispan       762.385292 1197.871812  0.6364  0.52491  
+    ## married     -129.340891  925.027275 -0.1398  0.88888  
+    ## nodegree     273.837364 1068.170639  0.2564  0.79783  
+    ## re74           0.034354    0.168952  0.2033  0.83899  
+    ## re75           0.250141    0.161806  1.5459  0.12304  
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+## Uncertainty / confidence intervals
+
+<https://kosukeimai.github.io/MatchIt/articles/estimating-effects.html#after-pair-matching-with-replacement-1>
+
+``` r
+#Block bootstrap confidence interval
+# library(boot)
+
+pair_ids <- levels(match_1_data$subclass)
+
+est_fun <- function(pairs, i) {
+  
+  #Compute number of times each pair is present
+  numreps <- table(pairs[i])
+  
+  #For each pair p, copy corresponding md row indices numreps[p] times
+  ids <- unlist(lapply(pair_ids[pair_ids %in% names(numreps)],
+                       function(p) rep(which(match_1_data$subclass == p), 
+                                              numreps[p])))
+  
+  #Subset md with block bootstrapped ids
+  md_boot <- match_1_data[ids,]
+  
+  #Effect estimation
+  fit_boot <- lm(re78 ~ treat,
+                 data = md_boot,
+                 weights = weights)
+  
+  #Return the coefficient on treatment
+  return(coef(fit_boot)["treat"])
+}
+
+boot_est <- boot(pair_ids, est_fun, R = 499)
+boot_est
+```
+
+    ## 
+    ## ORDINARY NONPARAMETRIC BOOTSTRAP
+    ## 
+    ## 
+    ## Call:
+    ## boot(data = pair_ids, statistic = est_fun, R = 499)
+    ## 
+    ## 
+    ## Bootstrap Statistics :
+    ##     original    bias    std. error
+    ## t1* 543.7484 -25.97893     682.619
+
+``` r
+boot.ci(boot_est, type = "bca")
+```
+
+    ## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
+    ## Based on 499 bootstrap replicates
+    ## 
+    ## CALL : 
+    ## boot.ci(boot.out = boot_est, type = "bca")
+    ## 
+    ## Intervals : 
+    ## Level       BCa          
+    ## 95%   (-644.5, 2048.3 )  
+    ## Calculations and Intervals on Original Scale
+    ## Some BCa intervals may be unstable
+
+<https://moderndive.com/10-inference-for-regression.html> is another
+helpful resource in addition to the above link from Kosuke Imai
+
 ## Generalized Linear Modeling
 
   - Get help page:
   - ?family
 
-<!-- end list -->
+See <https://fromthebottomoftheheap.net/2016/06/07/rootograms/>
 
 ``` r
 # Gaussian-distributed residuals and identity link = OLS:
@@ -1353,10 +1590,6 @@ plot(cooks.distance(gamma_log))
 ```
 
 ![](Lalonde_files/figure-gfm/glm-3.png)<!-- -->
-
-## Uncertainty / confidence intervals
-
-<https://moderndive.com/10-inference-for-regression.html>
 
 ## Logistic GLM
 

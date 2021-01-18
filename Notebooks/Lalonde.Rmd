@@ -83,9 +83,9 @@ ggplot(lalonde, aes(x=age)) +
 ```{r fitdistr, eval=TRUE, cache=TRUE}
 
 
-rgamma(100,2,11)
+hist(rgamma(100,2,11))
 
-rnorm(100,5,.01)
+hist(rnorm(100,5,.01))
 
 
 x <- rgamma(10000,2,11) + rnorm(10000,5,.01)
@@ -117,7 +117,7 @@ match_1 <- matchit(formula = treat ~ age + educ + black + hispan + married +
 
 match_1
 
-summary(match_1, )
+summary(match_1, subclass = TRUE, un = FALSE)
 
 ```
 
@@ -129,7 +129,7 @@ summary(match_1, )
 
 plot(summary(match_1))
 
-plot(bal.tab(match_1))
+love.plot(bal.tab(match_1), stars = "std")
 
 # Examining distributional balance with plots:
 bal.plot(match_1, var.name = "nodegree")
@@ -140,6 +140,9 @@ plot(match_1, type = "jitter", interactive = FALSE)
 
 plot(match_1, type = "qq", interactive = FALSE,
      which.xs = c("age", "married", "re75"))
+
+#eCDF plot
+plot(match_1, type = "ecdf", which.xs = c("educ", "married", "re75"))
 
 ```
 

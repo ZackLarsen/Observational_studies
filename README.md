@@ -4,7 +4,7 @@ Information on designing, organizing, and interpreting observational or quasi-ra
 
 See the [Wiki](https://github.com/ZackLarsen/Observational_studies/wiki) for more information.
 
-See the [Notebooks](https://github.com/ZackLarsen/Observational_studies/Notebooks) directory for github-rendered Rmarkdown notebooks.
+See the [Notebooks](https://github.com/ZackLarsen/Observational_studies/Notebooks/) directory for github-rendered Rmarkdown notebooks.
 
 ![alt text](https://www.fairfaxstatic.com.au/content/dam/images/g/o/f/8/v/3/image.related.articleLeadwide.620x349.gof8ed.png/1462159682926.png)
 

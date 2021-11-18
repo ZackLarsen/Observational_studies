@@ -14,6 +14,8 @@ See the **Notebooks** directory for github-rendered Rmarkdown notebooks.
 * https://zeligproject.org/
 * https://microsoft.github.io/dowhy/
 * https://books.ropensci.org/targets/
+* https://humboldt-wi.github.io/blog/research/information_systems_1920/group5_causal_neural_networks/
+* https://humboldt-wi.github.io/blog/research/applied_predictive_modeling_19/matching_methods/
 
 ## Reference Materials:
 * https://www.mostlyharmlesseconometrics.com/book-contents/
